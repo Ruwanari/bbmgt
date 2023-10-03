@@ -4,9 +4,10 @@ from .models import player, team, match, match_stats
 from django.db.models.functions import Coalesce
 from django.db.models import F, ExpressionWrapper, FloatField, Sum, Count, Value
 from collections import defaultdict
-
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required
 def getPlayer(request, id):
     pl = player.objects.get(id=id)
     count = match_stats.objects.filter(playerId_id=id).count()
