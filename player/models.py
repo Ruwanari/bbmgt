@@ -2,9 +2,16 @@ from django.db import models
 
 # Create your models here.
 
+class coach(models.Model):
+    name = models.CharField(max_length=500)
+    email = models.CharField(max_length=500)
+
+    def __str__(self):
+        return self.name
+
 class team(models.Model):
     name = models.CharField(max_length=200)
-    coachName = models.CharField(max_length=500)
+    coachId = models.ForeignKey(coach, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -13,6 +20,7 @@ class player(models.Model):
     name = models.CharField(max_length=500)
     height =models.IntegerField()
     teamId = models.ForeignKey(team, on_delete=models.CASCADE)
+    email = models.CharField(max_length=500)
 
     def __str__(self):
         return self.name

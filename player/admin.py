@@ -3,7 +3,7 @@ from player.models import team, player, match, match_stats
 
 
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ['name', 'coachName']
+    list_display = ['name']
 
 class PlayerAdmin(admin.ModelAdmin):
     list_display = ['name', 'height', 'teamId_id']
