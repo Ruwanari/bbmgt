@@ -9,39 +9,58 @@ from django.contrib.auth.decorators import permission_required, login_required
 @login_required
 # @permission_required('player.view_player')
 def getPlayer(request, id):
+
     isSuperUser = request.user.is_superuser
     email = request.user.email
+
+    print('The request details received, is Admin :', isSuperUser, "email:", email,"id:", id)
+
     pl = player.objects.get(id=id)
     teamId = pl.teamId_id
     teamDetails = team.objects.get(id=teamId)
     coachDetails = coach.objects.get(id=teamDetails.coachId_id)
+
+    #granting access only for coach of the player's team, player or admin
     if email == pl.email or email == coachDetails.email or isSuperUser == 1:
+
         count = match_stats.objects.filter(playerId_id=id).count()
         sum_result = match_stats.objects.filter(playerId_id=id).aggregate(total_sum=Sum('points'))['total_sum']
         avg_score = sum_result / count
+
+        # Create a dictionary for the JSON response
         data = {
             'Name': pl.name,
             'Height': pl.height,
             'Number of matches played': count,
             'Average Score': avg_score
         }
+        print('Returning success response', data)
+
+        # Return the JSON response
         return JsonResponse(data)
     else:
+        #error handling
         data = {
             'code': 500,
             'message': "You do not have access to this page!"
 
         }
+        print('Returning error response', data)
         return JsonResponse(data)
 
 
 @login_required# Create your views here.
 # @permission_required('player.view_team')
 def getTeam(request, id):
+
     isSuperUser = request.user.is_superuser
     email = request.user.email
+
+    print('The request details received, is Admin :', isSuperUser, "email:", email, "id:", id)
     teamDetails = team.objects.get(id=id)
     coachDetails = coach.objects.get(id=teamDetails.coachId_id)
+
+    #granting access only for coach of the team or admin
     if email == coachDetails.email or isSuperUser == 1:
         score_team_1 = match.objects.filter(team1_id=id).aggregate(total_sum1=Sum(Coalesce('team1Score', Value(0))))[
             'total_sum1']
@@ -58,10 +77,11 @@ def getTeam(request, id):
 
         total_count = count_team_1 + count_team_2
 
+        # Avoid division by zero
         if total_count > 0:
             avg = total_score / total_count
         else:
-            avg = 0  # Avoid division by zero
+            avg = 0
 
         plyerRows = player.objects.filter(teamId_id=id)
 
@@ -74,6 +94,7 @@ def getTeam(request, id):
         response_data = {'Average_Score_for_the_team': avg, 'Name_list': name_list}
 
         # Return the JSON response
+        print('Returning success response', response_data)
         return JsonResponse(response_data)
     else:
         data = {
@@ -81,10 +102,13 @@ def getTeam(request, id):
             'message': "You do not have access to this page!"
 
         }
+        print('Returning error response', data)
         return JsonResponse(data)
 
 
 def getOverview(request):
+    print('The request details received, is Admin :', request.user.is_superuser, "email:", request.user.email)
+
     matches = match.objects.all()
 
     match_stat_list = []
@@ -108,6 +132,7 @@ def getOverview(request):
 
         match_stat_list.append(new)
 
+    print('Returning success response', match_stat_list)
     return JsonResponse(match_stat_list, safe=False)
 
 @login_required
@@ -115,6 +140,8 @@ def getOverview(request):
 def getBest(request, id):
     isSuperUser = request.user.is_superuser
     email = request.user.email
+    print('The request details received, is Admin :', isSuperUser, "email:", email, "id:", id)
+
     teamDetails = team.objects.get(id=id)
     coachDetails = coach.objects.get(id=teamDetails.coachId_id)
     if email == coachDetails.email or isSuperUser == 1:
@@ -146,6 +173,17 @@ def getBest(request, id):
             if dictValue >= percentile:
                 name_list.append(player.objects.get(id=dictKey).name)
 
+        #sending a message if there are no exceptional players.
+        if not name_list:
+            data = {
+                'code': 200,
+                'message': "There are no players in 90th percentile!"
+
+            }
+            print('Returning success response', data)
+            return JsonResponse(data)
+
+        print('Returning success response', name_list)
         return JsonResponse(name_list, safe=False)
     else:
         data = {
@@ -153,4 +191,5 @@ def getBest(request, id):
             'message': "You do not have access to this page!"
 
         }
+        print('Returning error response', data)
         return JsonResponse(data)
