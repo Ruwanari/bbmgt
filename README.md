@@ -11,7 +11,7 @@
 
 ## Introduction
 
-**bbmgt** is a basketball league management system created to efficiently monitor game statistics and rankings for a recent basketball tournament. It offers an intuitive interface for tracking game results, player performances, and league standings.
+**bbmgt** is a basketball league management system created to efficiently monitor game statistics and rankings for a recent basketball tournament. It exposes a set of apis for tracking game results, player performances, and league standings.
 
 ## Getting Started
 
